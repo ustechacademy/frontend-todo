@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO App</title>
+</head>
+
+<body>
+    <h1>TODO App</h1>
+    <form>
+        <input type="text" id="todo-item" placeholder="Add todo item" />
+        <button type="submit" id="add-button">Add Todo</button>
+    </form>
+    <ul id="todo-list">
+
+    </ul>
+
+    <script>
+        const form = document.querySelector("form");
+        const inputTodo = document.querySelector("#todo-item");
+        const todoList = document.querySelector("#todo-list");
+
+        form.addEventListener("submit", addToDo);
+
+        async function addToDo(event) {
+            event.preventDefault();
+            console.log(event);
+            //id, title, status
+            // Ajax, Fetch Api
+            const todoTitle = inputTodo.value;
+            inputTodo.value = "";
+            //id "", title, status -> "In-progress"
+            const bodyObj = {
+                id: "",
+                title: todoTitle,
+                status: "in-progress"
+            };
+
+            // async ve await
+            const response = await fetch(
+                "http://localhost:8080/api/todo",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(bodyObj)
+                }
+            );
+
+            if (response.ok) {
+                let json = await response.json();
+
+                const li = document.createElement("li");
+                li.innerHTML = todoTitle;
+                li.setAttribute("todo-id",json.todoId)
+
+                // delete button elementi olusturulacak ve bunu li icerisine ekleyecegiz.
+                const deleteButton = document.createElement("button");
+                deleteButton.innerHTML = "Delete";
+                deleteButton.addEventListener("click", deleteTodo);
+
+                li.appendChild(deleteButton);
+                todoList.appendChild(li);
+            }
+            else {
+                alert("Error");
+            }
+
+        }
+
+        async function deleteTodo(event) {
+            event.preventDefault();
+            // todo  Delete edilecek ? id?
+            const button = event.target;
+            const li = button.parentNode;
+            const todoId = li.getAttribute("todo-id");
+
+            const response = await fetch(
+                `http://localhost:8080/api/todo/${todoId}`,
+                {
+                    method: "DELETE"
+                });
+
+                if(response.ok){
+                    todoList.removeChild(li);
+                }
+        }
+
+    </script>
+
+</body>
+
+</html>
